@@ -14,6 +14,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { ThreadArgs } from "@/types"
 
 const formSchema = z.object({
     newMessage: z.string().min(2, {
@@ -21,7 +22,8 @@ const formSchema = z.object({
     }),
 })
 
-export function Thread() {
+export function Thread({ thread }: ThreadArgs) {
+    console.log(thread)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -30,8 +32,6 @@ export function Thread() {
     })
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
         console.log(values)
     }
     return (
