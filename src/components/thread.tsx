@@ -1,6 +1,6 @@
 "use client"
 import { useFormState } from 'react-dom'
-import { useOptimistic } from 'react'
+import { useOptimistic, useRef, useEffect } from 'react'
 import { addContentToThread, getMessages } from "@/actions";
 import { ThreadProps, ThreadMessageProps, TextContentProps, MediaContentProps, OBJECT_TYPE_ENUM, ROLE_ENUM } from "@/types";
 import { SubmitButton } from '@/components/submit-button'
@@ -11,6 +11,12 @@ const initialState = {
 }
 export function Thread({ thread, messages }: ThreadProps) {
     const [state, formAction] = useFormState(addContentToThread, initialState)
+    const inputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (state.message === "success" && inputRef.current) {
+            inputRef.current.value = ""
+        }
+    }, [state])
     const [optimisticMessages, addOptimisticMessage] = useOptimistic(
         messages,
         (state, newContent) => {
@@ -48,9 +54,8 @@ export function Thread({ thread, messages }: ThreadProps) {
                 formAction(formData)
             }}
         >
-            <input name="content" placeholder="Escribe algo" />
+            <input ref={inputRef} name="content" placeholder="Escribe algo" />
             <input name="threadId" readOnly value={thread.id} hidden />
-            <p>{state?.message}</p>
             <SubmitButton />
         </form>
     </>

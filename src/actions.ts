@@ -103,7 +103,7 @@ export async function addContentToThread(state: any, formData: FormData): Promis
 
         revalidatePath("/")
         return {
-            message: "Done."
+            message: "success"
         }
 
     } catch (error) {
