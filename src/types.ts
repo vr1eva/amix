@@ -50,6 +50,9 @@ export enum ROLE_ENUM {
     user = "user"
 }
 
+export enum OBJECT_TYPE_ENUM {
+    message = "thread.message"
+}
 export interface GetMessagesArgs {
     threadId: string
 }

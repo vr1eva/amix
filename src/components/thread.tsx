@@ -2,9 +2,9 @@
 import { useFormState } from 'react-dom'
 import { useOptimistic } from 'react'
 import { addContentToThread, getMessages } from "@/actions";
-import { ThreadProps, ThreadMessageProps, TextContentProps, MediaContentProps } from "@/types";
+import { ThreadProps, ThreadMessageProps, TextContentProps, MediaContentProps, OBJECT_TYPE_ENUM, ROLE_ENUM } from "@/types";
 import { SubmitButton } from '@/components/submit-button'
-import { MessageCreateParams, ThreadMessage } from 'openai/resources/beta/threads/index';
+import { MessageContentText } from 'openai/resources/beta/threads/index';
 
 const initialState = {
     message: '',
@@ -20,12 +20,12 @@ export function Thread({ thread, messages }: ThreadProps) {
                     {
                         id: "idk",
                         assistant_id: null,
-                        content: [{ type: "text", text: { annotations: [], value: newContent } }],
+                        content: [{ type: "text", text: { annotations: [], value: newContent } } as MessageContentText],
                         created_at: 2,
                         file_ids: [],
                         metadata: null,
-                        object: 'thread.message',
-                        role: 'user',
+                        object: 'thread.message' as OBJECT_TYPE_ENUM,
+                        role: 'user' as ROLE_ENUM,
                         run_id: null,
                         thread_id: thread.id
                     }
