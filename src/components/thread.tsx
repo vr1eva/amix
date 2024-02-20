@@ -1,25 +1,24 @@
+"use client"
+import { useFormState } from 'react-dom'
 import { addContentToThread, getMessages } from "@/actions";
 import { ThreadProps, ThreadMessageProps, TextContentProps, MediaContentProps } from "@/types";
+import { SubmitButton } from '@/components/submit-button'
 
-async function getData({ threadId }: { threadId: string }) {
-    const { error, messages } = await getMessages({ threadId })
-    if (error || !messages) {
-        throw new Error('Could not fetch messages')
-    }
-    return { messages }
+const initialState = {
+    message: '',
 }
-
-export async function Thread({ thread }: ThreadProps) {
-    const { messages } = await getData({ threadId: thread.id })
-    const addContentToThreadWithId = addContentToThread.bind(null, thread.id as string)
+export function Thread({ thread, messages }: ThreadProps) {
+    const [state, formAction] = useFormState(addContentToThread, initialState)
 
     return <>
         {messages.map(message => (
             <ThreadMessage key={message.id} message={message} />
         ))}
-        <form action={addContentToThreadWithId}>
+        <form action={formAction}>
             <input name="content" placeholder="Escribe algo" />
-            <button type="submit" >enviar</button>
+            <input name="threadId" readOnly value={thread.id} hidden />
+            <p>{state?.message}</p>
+            <SubmitButton />
         </form>
     </>
 }

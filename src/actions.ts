@@ -1,6 +1,6 @@
 "use server"
 import { currentUser, clerkClient } from "@clerk/nextjs"
-import { CreateThreadArgs, CreateThreadResponse, GetMessagesResponse, GetMessagesArgs, GetThreadResponse, ROLE_ENUM, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse } from "./types"
+import { CreateThreadArgs, CreateThreadResponse, GetMessagesResponse, GetMessagesArgs, GetThreadResponse, ROLE_ENUM, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse, AddContentToThreadResponse } from "./types"
 import OpenAI from "openai"
 import { revalidatePath } from "next/cache";
 
@@ -91,9 +91,8 @@ async function retrieveThread({ threadId }: RetrieveThreadArgs): Promise<Retriev
     }
 }
 
-export async function addContentToThread(threadId: string, formData: FormData): Promise<void> {
-    const content = formData.get("content") as string
-    console.log(content, threadId)
+export async function addContentToThread(state: any, formData: FormData): Promise<AddContentToThreadResponse> {
+    const [content, threadId] = [formData.get("content") as string, formData.get("threadId") as string]
     try {
         await openai.beta.threads.messages.create(threadId, {
             content,
@@ -103,6 +102,10 @@ export async function addContentToThread(threadId: string, formData: FormData): 
         })
 
         revalidatePath("/")
+        return {
+            message: "Done."
+        }
+
     } catch (error) {
         console.error(error)
         throw new Error('Could not add content to the Thread')
@@ -114,7 +117,6 @@ export async function getMessages({ threadId }: GetMessagesArgs): Promise<GetMes
     if (!messages) {
         return {
             error: "Failed to get messages",
-
         }
     }
 

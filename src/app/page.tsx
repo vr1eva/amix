@@ -1,14 +1,19 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs"
 import { Thread } from "@/components/thread"
 import { UserButton } from "@clerk/nextjs";
-import { getThread } from "@/actions";
+import { getMessages, getThread } from "@/actions";
 
 async function getData() {
-  const { error, thread } = await getThread()
-  if (error || !thread) {
+  const { error: errorFetchingThread, thread } = await getThread()
+  if (errorFetchingThread || !thread) {
     throw new Error('Could not fetch Thread')
   }
-  return thread
+
+  const { error: errorGettingMessages, messages } = await getMessages({ threadId: thread.id })
+  if (errorGettingMessages || !messages) {
+    throw new Error('Could not fetch Messages')
+  }
+  return { thread, messages }
 }
 
 export default async function Page() {
@@ -17,12 +22,12 @@ export default async function Page() {
     redirectToSignIn()
   }
 
-  const thread = await getData()
+  const { thread, messages } = await getData()
 
   return (
     <main className="h-screen px-2 py-4">
       <UserButton />
-      <Thread thread={thread} />
+      <Thread thread={thread} messages={messages} />
     </main>
   )
 }

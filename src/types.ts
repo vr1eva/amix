@@ -38,7 +38,8 @@ export type GetThreadResponse = {
 }
 
 export interface ThreadProps {
-    thread: Thread
+    thread: Thread,
+    messages: ThreadMessage[]
 }
 
 export interface ThreadMessageProps {
@@ -64,4 +65,8 @@ export interface TextContentProps {
 
 export interface MediaContentProps {
     content: MessageContentImageFile
+}
+
+export type AddContentToThreadResponse = {
+    message: string
 }
