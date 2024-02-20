@@ -1,6 +1,6 @@
 
 import { Thread } from "openai/resources/beta/index"
-import { ThreadMessage, MessageCreateParams, MessageContentText, MessageContentImageFile } from "openai/resources/beta/threads/index.mjs"
+import { ThreadMessage, MessageCreateParams, MessageContentText, MessageContentImageFile, Run } from "openai/resources/beta/threads/index.mjs"
 
 export type ActionError = null | string
 
@@ -72,4 +72,33 @@ export interface MediaContentProps {
 
 export type AddContentToThreadResponse = {
     message: string
+}
+
+export interface CreateMessageArgs {
+    message: MessageCreateParams;
+    threadId: string
+}
+
+export type CreateMessageResponse = {
+    newMessage?: ThreadMessage
+    error: ActionError
+}
+
+export interface RunAssistantAgainstThreadArgs {
+    threadId: string;
+}
+
+export type RunAssistantAgainstThreadResponse = {
+    run?: Run;
+    error: ActionError
+}
+
+export interface CreateRunArgs {
+    threadId: string,
+    assistantId: string
+}
+
+export type CreateRunResponse = {
+    run?: Run;
+    error: ActionError
 }

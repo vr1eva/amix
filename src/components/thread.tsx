@@ -24,7 +24,7 @@ export function Thread({ thread, messages }: ThreadProps) {
                 [
                     ...state,
                     {
-                        id: "idk",
+                        id: "tbd",
                         assistant_id: null,
                         content: [{ type: "text", text: { annotations: [], value: newContent } } as MessageContentText],
                         created_at: 2,
@@ -39,9 +39,6 @@ export function Thread({ thread, messages }: ThreadProps) {
             )
         }
     );
-
-
-
 
     return <>
         {optimisticMessages.map(message => (

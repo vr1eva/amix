@@ -1,6 +1,6 @@
 "use server"
 import { currentUser, clerkClient } from "@clerk/nextjs"
-import { CreateThreadArgs, CreateThreadResponse, GetMessagesResponse, GetMessagesArgs, GetThreadResponse, ROLE_ENUM, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse, AddContentToThreadResponse } from "./types"
+import { CreateThreadArgs, CreateThreadResponse, GetMessagesResponse, GetMessagesArgs, GetThreadResponse, ROLE_ENUM, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse, AddContentToThreadResponse, CreateMessageArgs, CreateMessageResponse, RunAssistantAgainstThreadResponse, RunAssistantAgainstThreadArgs, CreateRunArgs, CreateRunResponse } from "./types"
 import OpenAI from "openai"
 import { revalidatePath } from "next/cache";
 
@@ -94,12 +94,22 @@ async function retrieveThread({ threadId }: RetrieveThreadArgs): Promise<Retriev
 export async function addContentToThread(state: any, formData: FormData): Promise<AddContentToThreadResponse> {
     const [content, threadId] = [formData.get("content") as string, formData.get("threadId") as string]
     try {
-        await openai.beta.threads.messages.create(threadId, {
-            content,
-            role: 'user' as ROLE_ENUM,
-            file_ids: [],
-            metadata: null
+        const { error: errorCreatingNewMessage, newMessage } = await createMessage({
+            threadId, message: {
+                content,
+                role: 'user' as ROLE_ENUM,
+                file_ids: [],
+                metadata: null
+            }
         })
+
+        if (errorCreatingNewMessage || !newMessage) {
+            return {
+                message: "fail"
+            }
+        }
+
+        await runAssistantAgainstThread({ threadId })
 
         revalidatePath("/")
         return {
@@ -123,5 +133,46 @@ export async function getMessages({ threadId }: GetMessagesArgs): Promise<GetMes
     return {
         messages: messages.data,
         error: null
+    }
+}
+
+async function createMessage({ threadId, message }: CreateMessageArgs): Promise<CreateMessageResponse> {
+    const newMessage = await openai.beta.threads.messages.create(threadId, message)
+    if (!newMessage) {
+        return {
+            error: "Could not create new message."
+        }
+    }
+    return {
+        error: null,
+        newMessage
+    }
+}
+
+async function runAssistantAgainstThread({ threadId }: RunAssistantAgainstThreadArgs): Promise<RunAssistantAgainstThreadResponse> {
+    const { error: errorExecutingRun, run } = await createRun({ threadId, assistantId: process.env.ASSISTANT_ID as string })
+    if (errorExecutingRun || !run) {
+        return {
+            error: errorExecutingRun
+        }
+    }
+
+    return {
+        error: null,
+        run
+    }
+}
+
+async function createRun({ threadId, assistantId }: CreateRunArgs): Promise<CreateRunResponse> {
+    const run = await openai.beta.threads.runs.create(threadId, { assistant_id: assistantId })
+    if (!run) {
+        return {
+            error: "Could not create run"
+        }
+    }
+
+    return {
+        error: null,
+        run
     }
 }
