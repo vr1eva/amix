@@ -1,5 +1,6 @@
 
 import { Thread } from "openai/resources/beta/index"
+import { ThreadMessage, MessageCreateParams, MessageContentText, MessageContentImageFile } from "openai/resources/beta/threads/index.mjs"
 
 export type ActionError = null | string
 
@@ -36,6 +37,31 @@ export type GetThreadResponse = {
     error: ActionError
 }
 
-export interface ThreadArgs {
+export interface ThreadProps {
     thread: Thread
+}
+
+export interface ThreadMessageProps {
+    message: ThreadMessage
+}
+
+export enum ROLE_ENUM {
+    user = "user"
+}
+
+export interface GetMessagesArgs {
+    threadId: string
+}
+
+export type GetMessagesResponse = {
+    messages?: ThreadMessage[],
+    error: ActionError
+}
+
+export interface TextContentProps {
+    content: MessageContentText
+}
+
+export interface MediaContentProps {
+    content: MessageContentImageFile
 }

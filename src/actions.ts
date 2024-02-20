@@ -1,8 +1,12 @@
+"use server"
 import { currentUser, clerkClient } from "@clerk/nextjs"
-import { CreateThreadArgs, CreateThreadResponse, GetThreadResponse, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse } from "./types"
+import { CreateThreadArgs, CreateThreadResponse, GetMessagesResponse, GetMessagesArgs, GetThreadResponse, ROLE_ENUM, RetrieveThreadArgs, RetrieveThreadResponse, SaveThreadMetadataArgs, SaveThreadMetadataResponse } from "./types"
 import OpenAI from "openai"
+import { revalidatePath } from "next/cache";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 export async function getThread(): Promise<GetThreadResponse> {
     const user = await currentUser()
@@ -87,4 +91,35 @@ async function retrieveThread({ threadId }: RetrieveThreadArgs): Promise<Retriev
     }
 }
 
+export async function addContentToThread(formData: FormData): Promise<void> {
+    const [content, threadId] = [formData.get("content") as string, formData.get("threadId") as string]
+    console.log(content, threadId)
+    try {
+        await openai.beta.threads.messages.create(threadId, {
+            content,
+            role: 'user' as ROLE_ENUM,
+            file_ids: [],
+            metadata: null
+        })
 
+        revalidatePath("/")
+    } catch (error) {
+        console.error(error)
+        throw new Error('Could not add content to the Thread')
+    }
+}
+
+export async function getMessages({ threadId }: GetMessagesArgs): Promise<GetMessagesResponse> {
+    const messages = await openai.beta.threads.messages.list(threadId, { order: "asc" })
+    if (!messages) {
+        return {
+            error: "Failed to get messages",
+
+        }
+    }
+
+    return {
+        messages: messages.data,
+        error: null
+    }
+}
