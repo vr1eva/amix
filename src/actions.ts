@@ -91,8 +91,8 @@ async function retrieveThread({ threadId }: RetrieveThreadArgs): Promise<Retriev
     }
 }
 
-export async function addContentToThread(formData: FormData): Promise<void> {
-    const [content, threadId] = [formData.get("content") as string, formData.get("threadId") as string]
+export async function addContentToThread(threadId: string, formData: FormData): Promise<void> {
+    const content = formData.get("content") as string
     console.log(content, threadId)
     try {
         await openai.beta.threads.messages.create(threadId, {

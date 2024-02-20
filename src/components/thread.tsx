@@ -11,14 +11,14 @@ async function getData({ threadId }: { threadId: string }) {
 
 export async function Thread({ thread }: ThreadProps) {
     const { messages } = await getData({ threadId: thread.id })
+    const addContentToThreadWithId = addContentToThread.bind(null, thread.id as string)
 
     return <>
         {messages.map(message => (
             <ThreadMessage key={message.id} message={message} />
         ))}
-        <form action={addContentToThread}>
+        <form action={addContentToThreadWithId}>
             <input name="content" placeholder="Escribe algo" />
-            <input name="threadId" readOnly value={thread.id} hidden />
             <button type="submit" >enviar</button>
         </form>
     </>
