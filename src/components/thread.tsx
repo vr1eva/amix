@@ -1,20 +1,53 @@
 "use client"
 import { useFormState } from 'react-dom'
+import { useOptimistic } from 'react'
 import { addContentToThread, getMessages } from "@/actions";
 import { ThreadProps, ThreadMessageProps, TextContentProps, MediaContentProps } from "@/types";
 import { SubmitButton } from '@/components/submit-button'
+import { MessageCreateParams, ThreadMessage } from 'openai/resources/beta/threads/index';
 
 const initialState = {
     message: '',
 }
 export function Thread({ thread, messages }: ThreadProps) {
     const [state, formAction] = useFormState(addContentToThread, initialState)
+    const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+        messages,
+        (state, newContent) => {
+            return (
+                [
+                    ...state,
+                    {
+                        id: "idk",
+                        assistant_id: null,
+                        content: [{ type: "text", text: { annotations: [], value: newContent } }],
+                        created_at: 2,
+                        file_ids: [],
+                        metadata: null,
+                        object: 'thread.message',
+                        role: 'user',
+                        run_id: null,
+                        thread_id: thread.id
+                    }
+                ]
+            )
+        }
+    );
+
+
+
 
     return <>
-        {messages.map(message => (
-            <ThreadMessage key={message.id} message={message} />
+        {optimisticMessages.map(message => (
+            <ThreadContent key={message.id} message={message} />
         ))}
-        <form action={formAction}>
+        <form
+            action={async (formData: FormData) => {
+                const newContent = formData.get('content')
+                addOptimisticMessage(newContent)
+                formAction(formData)
+            }}
+        >
             <input name="content" placeholder="Escribe algo" />
             <input name="threadId" readOnly value={thread.id} hidden />
             <p>{state?.message}</p>
@@ -23,7 +56,7 @@ export function Thread({ thread, messages }: ThreadProps) {
     </>
 }
 
-function ThreadMessage({ message }: ThreadMessageProps) {
+function ThreadContent({ message }: ThreadMessageProps) {
     return (
         message.content.map((pieceOfContent, index) => (pieceOfContent.type === "text" ? <TextContent key={index} content={pieceOfContent} /> : <MediaContent content={pieceOfContent} key={index} />))
     )
